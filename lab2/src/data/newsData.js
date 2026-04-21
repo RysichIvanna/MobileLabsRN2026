@@ -16,8 +16,8 @@ export const generateMockNews = (count = 10, startIndex = 1) =>
 
     return {
       id: String(itemNumber),
-      title: `Новина ${itemNumber}`,
-      description: `Це тестовий опис для новини ${itemNumber}. Якийсь текст.`,
+      title: `News ${itemNumber}`,
+      description: `This is a mock description for news item ${itemNumber}. It is used to demonstrate list rendering and detail content in the app.`,
       image: `https://picsum.photos/seed/${imageSeed}-${itemNumber}/600/400`,
     };
   });

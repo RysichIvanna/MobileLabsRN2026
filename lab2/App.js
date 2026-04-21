@@ -1,20 +1,174 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+
+import { generateMockNews, initialNews } from './src/data/newsData';
+
+const PAGE_SIZE = 6;
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
+  const [news, setNews] = useState(initialNews);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+
+    setTimeout(() => {
+      setNews(generateMockNews(10, 1));
+      setRefreshing(false);
+    }, 1200);
+  };
+
+  const handleLoadMore = () => {
+    if (loadingMore) {
+      return;
+    }
+
+    setLoadingMore(true);
+
+    setTimeout(() => {
+      setNews((currentNews) => [
+        ...currentNews,
+        ...generateMockNews(PAGE_SIZE, currentNews.length + 1),
+      ]);
+      setLoadingMore(false);
+    }, 1200);
+  };
+
+  const renderNewsItem = ({ item }) => (
+    <View style={styles.card}>
+      <Image source={{ uri: item.image }} style={styles.cardImage} />
+      <View style={styles.cardContent}>
+        <Text style={styles.cardTitle}>{item.title}</Text>
+        <Text style={styles.cardDescription}>{item.description}</Text>
+      </View>
     </View>
+  );
+
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <Text style={styles.headerTitle}>News Feed</Text>
+      <Text style={styles.headerSubtitle}>
+        Pull down to refresh or scroll to the bottom to load more items.
+      </Text>
+    </View>
+  );
+
+  const renderFooter = () => (
+    <View style={styles.footer}>
+      {loadingMore ? (
+        <>
+          <ActivityIndicator size="small" color="#2563eb" />
+          <Text style={styles.footerText}>Loading more news...</Text>
+        </>
+      ) : (
+        <Text style={styles.footerText}>You have reached the end of the current list.</Text>
+      )}
+    </View>
+  );
+
+  const renderSeparator = () => <View style={styles.separator} />;
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar style="dark" />
+      <FlatList
+        data={news}
+        renderItem={renderNewsItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.4}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        ItemSeparatorComponent={renderSeparator}
+        initialNumToRender={6}
+        maxToRenderPerBatch={6}
+        windowSize={7}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f4f7fb',
+  },
+  listContent: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 24,
+  },
+  header: {
+    marginBottom: 20,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 8,
+  },
+  headerSubtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#475569',
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    overflow: 'hidden',
+    shadowColor: '#0f172a',
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 3,
+  },
+  cardImage: {
+    width: '100%',
+    height: 180,
+    backgroundColor: '#cbd5e1',
+  },
+  cardContent: {
+    padding: 16,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 8,
+  },
+  cardDescription: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: '#475569',
+  },
+  separator: {
+    height: 14,
+  },
+  footer: {
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 20,
+    gap: 10,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
   },
 });
