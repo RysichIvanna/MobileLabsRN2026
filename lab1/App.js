@@ -1,12 +1,11 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button } from 'react-native';
-import * as React from 'react';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './screens/HomeScreen';
 import GalleryScreen from './screens/GalleryScreen';
 import ProfileScreen from './screens/ProfileScreen';
-import { Ionicons } from '@expo/vector-icons';
+import styles from './styles/AppStyles';
 
 const Tab = createBottomTabNavigator();
 
@@ -17,28 +16,22 @@ export default function App() {
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color, size }) => {
             let iconName;
-            if (route.name === 'Головна') iconName = 'home';
-            else if (route.name === 'Фотогалерея') iconName = 'images';
-            else if (route.name === 'Профіль') iconName = 'person';
+
+            if (route.name === 'Home') iconName = 'home';
+            else if (route.name === 'Gallery') iconName = 'images';
+            else if (route.name === 'Profile') iconName = 'person';
+
             return <Ionicons name={iconName} size={size} color={color} />;
           },
           tabBarActiveTintColor: 'blue',
           tabBarInactiveTintColor: 'gray',
+          headerTitleStyle: styles.headerTitle,
         })}
       >
-        <Tab.Screen name="Головна" component={HomeScreen} />
-        <Tab.Screen name="Фотогалерея" component={GalleryScreen} />
-        <Tab.Screen name="Профіль" component={ProfileScreen} />
+        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Gallery" component={GalleryScreen} />
+        <Tab.Screen name="Profile" component={ProfileScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
