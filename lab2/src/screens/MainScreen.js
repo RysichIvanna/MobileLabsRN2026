@@ -62,12 +62,6 @@ export default function MainScreen({ navigation }) {
       <Text style={styles.headerSubtitle}>
         Pull down to refresh or scroll to the bottom to load more items.
       </Text>
-      <Pressable
-        onPress={() => navigation.navigate('Contacts')}
-        style={styles.contactsButton}
-      >
-        <Text style={styles.contactsButtonText}>Open Contacts</Text>
-      </Pressable>
     </View>
   );
 
@@ -131,19 +125,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     color: '#475569',
-  },
-  contactsButton: {
-    marginTop: 14,
-    alignSelf: 'flex-start',
-    backgroundColor: '#2563eb',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 12,
-  },
-  contactsButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
   },
   card: {
     backgroundColor: '#ffffff',
