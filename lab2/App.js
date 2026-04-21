@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import ContactsScreen from './src/screens/ContactsScreen';
 import DetailsScreen from './src/screens/DetailsScreen';
 import MainScreen from './src/screens/MainScreen';
 
@@ -26,6 +27,13 @@ export default function App() {
             component={DetailsScreen}
             options={{
               title: 'Details',
+            }}
+          />
+          <Stack.Screen
+            name="Contacts"
+            component={ContactsScreen}
+            options={{
+              title: 'Contacts',
             }}
           />
         </Stack.Navigator>
