@@ -7,11 +7,11 @@
 ![1](screenshots/s1.png)
 ![2](screenshots/s2.png)
 ![3](screenshots/s3.png)
-![3](screenshots/s4.png)
+![4](screenshots/s4.png)
 
 ## Коміти
 
-![4](screenshots/s5.png)
+![5](screenshots/s5.png)
 
 ### Як запустити
 
