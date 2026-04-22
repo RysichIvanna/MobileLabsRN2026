@@ -1,6 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import { Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { StyleSheet, Text, View, useColorScheme } from 'react-native';
+import {
+  State,
+  TapGestureHandler,
+  TapGestureHandlerStateChangeEvent,
+} from 'react-native-gesture-handler';
 
 const lightTheme = {
   background: '#f4efe6',
@@ -27,11 +32,56 @@ export default function Home() {
   const theme = scheme === 'dark' ? darkTheme : lightTheme;
   const [score, setScore] = useState(0);
   const [tapCount, setTapCount] = useState(0);
+  const [doubleTapCount, setDoubleTapCount] = useState(0);
   const [isPressed, setIsPressed] = useState(false);
+  const doubleTapRef = useRef<TapGestureHandler>(null);
 
   const handleTap = () => {
     setScore((current) => current + 1);
     setTapCount((current) => current + 1);
+  };
+
+  const handleDoubleTap = () => {
+    setScore((current) => current + 2);
+    setDoubleTapCount((current) => current + 1);
+  };
+
+  const handleSingleTapStateChange = (event: TapGestureHandlerStateChangeEvent) => {
+    if (event.nativeEvent.state === State.BEGAN) {
+      setIsPressed(true);
+    }
+
+    if (
+      event.nativeEvent.oldState === State.ACTIVE ||
+      event.nativeEvent.state === State.CANCELLED ||
+      event.nativeEvent.state === State.FAILED ||
+      event.nativeEvent.state === State.END
+    ) {
+      setIsPressed(false);
+    }
+
+    if (event.nativeEvent.state === State.ACTIVE) {
+      handleTap();
+    }
+  };
+
+  const handleDoubleTapStateChange = (event: TapGestureHandlerStateChangeEvent) => {
+    if (event.nativeEvent.state === State.BEGAN) {
+      setIsPressed(true);
+    }
+
+    if (
+      event.nativeEvent.oldState === State.ACTIVE ||
+      event.nativeEvent.state === State.CANCELLED ||
+      event.nativeEvent.state === State.FAILED ||
+      event.nativeEvent.state === State.END
+    ) {
+      setIsPressed(false);
+    }
+
+    if (event.nativeEvent.state === State.ACTIVE) {
+      handleDoubleTap();
+    }
   };
 
   return (
@@ -39,7 +89,9 @@ export default function Home() {
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
 
       <View style={[styles.heroCard, { backgroundColor: theme.panel }]}>
-        <Text style={[styles.kicker, { color: theme.muted }]}>Lab 3 Clicker // Rysich Ivanna</Text>
+        <Text selectable={false} style={[styles.kicker, { color: theme.muted }]}>
+          Lab 3 Clicker // Rysich Ivanna
+        </Text>
         <Text selectable={false} style={[styles.title, { color: theme.text }]}>
           Головний екран гри
         </Text>
@@ -56,40 +108,52 @@ export default function Home() {
 
           <View style={styles.scoreBlock}>
             <Text selectable={false} style={[styles.scoreLabel, { color: theme.muted }]}>
-              Натискання
+              Дотики
             </Text>
             <Text selectable={false} style={[styles.scoreValue, { color: theme.text }]}>
-              {tapCount}
+              {tapCount + doubleTapCount}
             </Text>
           </View>
         </View>
 
         <Text selectable={false} style={[styles.helper, { color: theme.muted }]}>
-          Торкайся об&apos;єкта, щоб отримувати очки.
+          Один тап дає +1, подвійний тап дає +2 очки.
+        </Text>
+        <Text selectable={false} style={[styles.helperSecondary, { color: theme.muted }]}>
+          Подвійні кліки: {doubleTapCount}
         </Text>
       </View>
 
       <View style={styles.playArea}>
-        <Pressable
-          onPress={handleTap}
-          onPressIn={() => setIsPressed(true)}
-          onPressOut={() => setIsPressed(false)}
-          style={({ pressed }) => [
-            styles.orbButton,
-            {
-              backgroundColor: theme.accent,
-              borderColor: theme.accentDark,
-              shadowColor: theme.glow,
-              transform: [{ scale: pressed || isPressed ? 0.94 : 1 }],
-            },
-          ]}
+        <TapGestureHandler
+          ref={doubleTapRef}
+          numberOfTaps={2}
+          maxDelayMs={250}
+          onHandlerStateChange={handleDoubleTapStateChange}
         >
-          <View style={[styles.innerOrb, { backgroundColor: theme.glow }]}>
-            <Text selectable={false} style={[styles.orbEmoji, { color: theme.text }]}>
-              +1
-            </Text>
-          </View>
-        </Pressable>
+          <TapGestureHandler
+            waitFor={doubleTapRef}
+            onHandlerStateChange={handleSingleTapStateChange}
+          >
+            <View
+              style={[
+                styles.orbButton,
+                {
+                  backgroundColor: theme.accent,
+                  borderColor: theme.accentDark,
+                  shadowColor: theme.glow,
+                  transform: [{ scale: isPressed ? 0.94 : 1 }],
+                },
+              ]}
+            >
+              <View style={[styles.innerOrb, { backgroundColor: theme.glow }]}>
+                <Text selectable={false} style={[styles.orbEmoji, { color: theme.text }]}>
+                  +1 / +2
+                </Text>
+              </View>
+            </View>
+          </TapGestureHandler>
+        </TapGestureHandler>
       </View>
     </View>
   );
@@ -149,6 +213,12 @@ const styles = StyleSheet.create({
   helper: {
     fontSize: 15,
     lineHeight: 22,
+  },
+  helperSecondary: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 8,
+    fontWeight: '600',
   },
   playArea: {
     flex: 1,
