@@ -13,6 +13,11 @@ export default function FileManager() {
     setFolderName,
     fileName,
     setFileName,
+    selectedFile,
+    fileContent,
+    setFileContent,
+    fileError,
+    saving,
     error,
     canGoUp,
     stats,
@@ -21,6 +26,9 @@ export default function FileManager() {
     createFolder,
     createFile,
     deleteEntry,
+    openFile,
+    saveFileContent,
+    closeFileViewer,
     parentUri,
     formatPath,
     formatBytes,
@@ -90,6 +98,45 @@ export default function FileManager() {
           </Pressable>
         </View>
 
+        {selectedFile ? (
+          <View style={styles.detailCard}>
+            <Text style={styles.sectionTitle}>Інформація про файл</Text>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Назва:</Text>
+              <Text style={styles.infoValue}>{selectedFile.name}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Тип:</Text>
+              <Text style={styles.infoValue}>{selectedFile.name.split('.').pop() ?? '---'}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Розмір:</Text>
+              <Text style={styles.infoValue}>{formatBytes(selectedFile.size)}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Останнє змінення:</Text>
+              <Text style={styles.infoValue}>{formatDate(selectedFile.modified)}</Text>
+            </View>
+            <TextInput
+              value={fileContent}
+              onChangeText={setFileContent}
+              multiline
+              style={styles.fileContentInput}
+              placeholder="Вміст файлу"
+              placeholderTextColor="#8a94a6"
+            />
+            {fileError ? <Text style={styles.errorText}>{fileError}</Text> : null}
+            <View style={styles.fileActionRow}>
+              <Pressable onPress={saveFileContent} style={[styles.primaryButton, saving && styles.actionButtonDisabled]} disabled={saving}>
+                <Text style={styles.primaryButtonText}>{saving ? 'Збереження...' : 'Зберегти'}</Text>
+              </Pressable>
+              <Pressable onPress={closeFileViewer} style={styles.secondaryButton}>
+                <Text style={styles.secondaryButtonText}>Закрити</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
+
         {loading ? (
           <View style={styles.centered}>
             <ActivityIndicator size="large" color="#2563eb" />
@@ -116,7 +163,9 @@ export default function FileManager() {
                 <Pressable
                   key={entry.uri}
                   onPress={() =>
-                    entry.isDirectory ? loadDirectory(entry.uri.endsWith('/') ? entry.uri : `${entry.uri}/`) : undefined
+                    entry.isDirectory
+                      ? loadDirectory(entry.uri.endsWith('/') ? entry.uri : `${entry.uri}/`)
+                      : openFile(entry)
                   }
                   style={styles.entryCard}
                 >

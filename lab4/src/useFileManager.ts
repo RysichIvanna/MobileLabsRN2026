@@ -63,6 +63,10 @@ export function useFileManager() {
   const [refreshing, setRefreshing] = useState(false);
   const [folderName, setFolderName] = useState('');
   const [fileName, setFileName] = useState('');
+  const [selectedFile, setSelectedFile] = useState<Entry | null>(null);
+  const [fileContent, setFileContent] = useState('');
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const canGoUp = currentUri !== ROOT_URI;
@@ -153,6 +157,9 @@ export function useFileManager() {
 
       setEntries(collected);
       setCurrentUri(uri);
+      setSelectedFile(null);
+      setFileContent('');
+      setFileError(null);
     } catch (directoryError) {
       const message =
         directoryError instanceof Error ? directoryError.message : 'Не вдалося відкрити директорію.';
@@ -166,6 +173,60 @@ export function useFileManager() {
   async function refresh() {
     setRefreshing(true);
     await loadDirectory(currentUri);
+  }
+
+  function isTextFile(entry: Entry) {
+    return entry.name.toLowerCase().endsWith('.txt');
+  }
+
+  async function openFile(entry: Entry) {
+    if (entry.isDirectory) {
+      return;
+    }
+
+    if (!isTextFile(entry)) {
+      Alert.alert('Підтримується тільки .txt', 'Відкрийте текстовий файл для перегляду та редагування.');
+      return;
+    }
+
+    setLoading(true);
+    setFileError(null);
+
+    try {
+      const content = await FileSystem.readAsStringAsync(entry.uri);
+      setSelectedFile(entry);
+      setFileContent(content);
+    } catch (readError) {
+      const message = readError instanceof Error ? readError.message : 'Не вдалося відкрити файл.';
+      setFileError(message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function saveFileContent() {
+    if (!selectedFile) {
+      return;
+    }
+
+    setSaving(true);
+    setFileError(null);
+
+    try {
+      await FileSystem.writeAsStringAsync(selectedFile.uri, fileContent);
+      await loadDirectory(currentUri);
+    } catch (saveError) {
+      const message = saveError instanceof Error ? saveError.message : 'Не вдалося зберегти файл.';
+      setFileError(message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function closeFileViewer() {
+    setSelectedFile(null);
+    setFileContent('');
+    setFileError(null);
   }
 
   async function createFolder() {
@@ -241,6 +302,11 @@ export function useFileManager() {
     setFolderName,
     fileName,
     setFileName,
+    selectedFile,
+    fileContent,
+    setFileContent,
+    fileError,
+    saving,
     error,
     canGoUp,
     stats,
@@ -249,6 +315,9 @@ export function useFileManager() {
     createFolder,
     createFile,
     deleteEntry,
+    openFile,
+    saveFileContent,
+    closeFileViewer,
     parentUri,
     formatPath,
     formatBytes,
