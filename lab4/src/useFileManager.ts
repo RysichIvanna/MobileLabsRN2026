@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import type { Entry } from './types';
 
-const ROOT_URI = `${FileSystem.documentDirectory ?? ''}file-manager-root/`;
+const ROOT_URI = FileSystem.documentDirectory ?? '';
 
 function joinUri(base: string, name: string) {
   return `${base}${name}`;
@@ -107,22 +107,13 @@ export function useFileManager() {
   }, [entries]);
 
   async function ensureDemoStructure() {
-    const rootInfo = await FileSystem.getInfoAsync(ROOT_URI);
-
-    if (!rootInfo.exists) {
-      await FileSystem.makeDirectoryAsync(ROOT_URI, { intermediates: true });
-      await FileSystem.makeDirectoryAsync(joinUri(ROOT_URI, 'documents/'), { intermediates: true });
-      await FileSystem.makeDirectoryAsync(joinUri(ROOT_URI, 'images/'), { intermediates: true });
-      await FileSystem.makeDirectoryAsync(joinUri(ROOT_URI, 'documents/reports/'), { intermediates: true });
-      await FileSystem.writeAsStringAsync(joinUri(ROOT_URI, 'readme.txt'), 'Лабораторна робота №4: файловий менеджер.');
-      await FileSystem.writeAsStringAsync(
-        joinUri(ROOT_URI, 'documents/notes.txt'),
-        'Це демонстраційний файл у папці documents.',
-      );
-      await FileSystem.writeAsStringAsync(
-        joinUri(ROOT_URI, 'documents/reports/week-1.txt'),
-        'Тут можна зберігати звіти або довільні текстові файли.',
-      );
+    try {
+      const rootInfo = await FileSystem.getInfoAsync(ROOT_URI);
+      if (!rootInfo.exists) {
+        await FileSystem.makeDirectoryAsync(ROOT_URI, { intermediates: true });
+      }
+    } catch (error) {
+      console.log('Document directory already exists');
     }
   }
 
